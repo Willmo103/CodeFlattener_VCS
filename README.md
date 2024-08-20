@@ -1,4 +1,4 @@
-# CodeFlattener
+# CodeFlattener VCS
 
 CodeFlattener is a tool designed to help manage and version your codebase. It provides functionality to flatten your code structure and create versioned snapshots.
 
@@ -14,7 +14,7 @@ You can install CodeFlattener using one of the following methods:
 2. Run the following command:
 
     ```powershell
-    iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Willmo103/FlattenCodeBase/main/install_codeflattener.ps1'))
+    iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Willmo103/CodeFlattener_VCS/main/install_codeflattener.ps1'))
     ```
 
 3. Restart your PowerShell session or run `. $PROFILE` to load the new command.
@@ -25,7 +25,7 @@ You can install CodeFlattener using one of the following methods:
 2. Run the following command:
 
     ```cmd
-    @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Willmo103/FlattenCodeBase/main/install_codeflattener.cmd'))"
+    @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Willmo103/CodeFlattener_VCS/main/install_codeflattener.cmd'))"
     ```
 
 3. Restart your Command Prompt to use the new command.
@@ -36,7 +36,7 @@ You can install CodeFlattener using one of the following methods:
 2. Run the following command:
 
     ```bash
-    curl -sSL https://raw.githubusercontent.com/Willmo103/FlattenCodeBase/main/install_codeflattener.sh | bash
+    curl -sSL https://raw.githubusercontent.com/Willmo103/CodeFlattener_VCS/main/install_codeflattener.sh | bash
     ```
 
 3. Restart your terminal or run `source ~/.bashrc` to load the new alias.
@@ -48,7 +48,7 @@ If you prefer to clone the repository first:
 1. Clone the repository:
 
    ```sh
-   git clone https://github.com/Willmo103/CodeFlattener_SourceControl.git
+   git clone https://github.com/Willmo103/CodeFlattener_VCS.git
    ```
 
 2. Navigate to the cloned directory:
@@ -90,12 +90,15 @@ If no path is provided, it will use the current directory.
 
 You can modify the `appsettings.json` file in the installation directory to customize:
 
-- Allowed file types
+- Allowed file types (and their markdown identifiers)
+  - **Example:** `{"allowed_extensions": {".py": "python", ".js": "javascript"}}`
+
 - Ignored directories and files
+  - **Example:** `{"ignored_files": ["node_modules", ".git", "__pycache__", "*.cpp", ".bin"]}`
 
 ## Feedback and Contributions
 
-If you encounter any issues or have suggestions for improvements, please open an issue on the [GitHub repository](https://github.com/Willmo103/CodeFlattener_SourceControl/issues).
+If you encounter any issues or have suggestions for improvements, please open an issue on the [GitHub repository](https://raw.githubusercontent.com/Willmo103/CodeFlattener_VCS/issues).
 
 ## License
 

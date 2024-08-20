@@ -7,7 +7,7 @@ mkdir "%installDir%" 2>nul
 :: Download files
 powershell -Command "& {Invoke-WebRequest -Uri 'https://github.com/Willmo103/FlattenCodeBase/releases/download/v2.2.0/CodeFlattener.exe' -OutFile '%installDir%\CodeFlattener.exe'}"
 powershell -Command "& {Invoke-WebRequest -Uri 'https://github.com/Willmo103/FlattenCodeBase/releases/download/v2.2.0/appsettings.json' -OutFile '%installDir%\appsettings.json'}"
-powershell -Command "& {Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/Willmo103/CodeFlattener_SourceControl/main/setup_flattener_vcs.py' -OutFile '%installDir%\Setup_flattener_vcs.py'}"
+powershell -Command "& {Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/Willmo103/CodeFlattener_VCS/main/setup_flattener_vcs.py' -OutFile '%installDir%\Setup_flattener_vcs.py'}"
 
 :: Create a batch file to run the Python script
 echo @echo off > "%installDir%\fltn.bat"
