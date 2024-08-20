@@ -9,7 +9,7 @@ New-Item -ItemType Directory -Force -Path $installDir | Out-Null
 # Download files
 $exeUrl = "https://github.com/Willmo103/FlattenCodeBase/releases/download/v2.2.0/CodeFlattener.exe"
 $jsonUrl = "https://github.com/Willmo103/FlattenCodeBase/releases/download/v2.2.0/appsettings.json"
-$pythonUrl = "https://raw.githubusercontent.com/Willmo103/FlattenCodeBaseVCS/main/Setup_flattener_vcs.py"
+$pythonUrl = "https://raw.githubusercontent.com/Willmo103/CodeFlattener_SourceControl/main/setup_flattener_vcs.py"
 
 $exePath = Join-Path $installDir "CodeFlattener.exe"
 $jsonPath = Join-Path $installDir "appsettings.json"
