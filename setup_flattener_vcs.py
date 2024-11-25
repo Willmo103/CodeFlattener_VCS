@@ -3,7 +3,7 @@ import shutil
 import sys
 
 install_dir = os.path.dirname(os.path.abspath(__file__))
-database_dir = os.paath.dirname(os.path.abspath('~'))
+database_dir = os.path.dirname(os.path.abspath('~'))
 
 counters_folder = os.path.join(install_dir, "counters")
 default_save_folder = os.path.join(database_dir, '.fltn_data')
