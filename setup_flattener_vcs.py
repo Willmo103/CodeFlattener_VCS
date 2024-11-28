@@ -1,88 +1,144 @@
 import os
 import shutil
 import sys
+import logging
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+
+# Determine the installation and database directories
 install_dir = os.path.dirname(os.path.abspath(__file__))
-database_dir = os.path.join(os.environ.get(
-    "USERHOME", os.path.expanduser("~")), ".fltn_data")
+database_dir = os.path.join(os.environ.get("USERHOME", os.path.expanduser("~")), ".fltn_data")
 
-print(install_dir)
-print(database_dir)
+logging.info(f"Installation Directory: {install_dir}")
+logging.info(f"Database Directory: {database_dir}")
 
 counters_folder = os.path.join(install_dir, "counters")
-default_save_folder = os.path.join(database_dir, '.fltn_data')
+default_save_folder = database_dir  # Removed redundant '.fltn_data' suffix
 
-if not os.path.exists(counters_folder):
-    os.makedirs(counters_folder, exist_ok=True)
+# Create necessary directories if they don't exist
+os.makedirs(counters_folder, exist_ok=True)
+os.makedirs(default_save_folder, exist_ok=True)
 
-if not os.path.exists(default_save_folder):
-    os.makedirs(default_save_folder, exist_ok=True)
+
+def run_python_setup(dev_folder, base_name, root_folder, project_save_folder, versions_folder,
+                    counter_file_path, ai_response_counter_file_path, python_path, ai_docs_folder):
+    """
+    Placeholder for Python environment setup.
+    Implement the actual setup logic as needed.
+    """
+    logging.info("Running Python setup...")
+    # TODO: Implement the Python setup logic
+    pass
+
+
+def powershell_setup(dev_folder, base_name, root_folder, project_save_folder, versions_folder,
+                    counter_file_path, ai_response_counter_file_path, ai_docs_folder):
+    """
+    Placeholder for PowerShell environment setup.
+    Implement the actual setup logic as needed.
+    """
+    logging.info("Running PowerShell setup...")
+    # TODO: Implement the PowerShell setup logic
+    pass
 
 
 def create_flattener_setup(root_folder):
+    """
+    Sets up the Code Flattener environment within the specified root folder.
+    
+    :param root_folder: The root directory where the setup will be performed.
+    :return: Tuple containing the path to the created PowerShell script and the .dev folder.
+    """
     global install_dir, counters_folder
 
-    # Make sure the root folder exists...
+    # Validate the root folder
     if not os.path.exists(root_folder):
         raise FileNotFoundError(f"Folder not found: {root_folder}")
 
-    # ...is a directory...
     if not os.path.isdir(root_folder):
         raise NotADirectoryError(f"Not a directory: {root_folder}")
 
-    # ...and is an absolute path.
     if not os.path.isabs(root_folder):
         root_folder = os.path.abspath(root_folder)
+        logging.info(f"Converted to absolute path: {root_folder}")
 
-    # Do the saame for a hidden home folder save path
-    # Make sure the database folder exists...
-    if not os.path.exists(default_save_folder):
-        os.makedirs(default_save_folder, exsist_ok=True)
+    # Ensure the database folder exists
+    os.makedirs(default_save_folder, exist_ok=True)
 
-    # Get the base name of the root folder
+    # Extract the base name of the root folder
     base_name = os.path.basename(root_folder)
 
-    # Create the .dev and versions folders
+    # Define the .dev and related folders
     dev_folder = os.path.join(root_folder, ".dev")
+    ai_docs_folder = os.path.join(dev_folder, "ai_docs")
     versions_folder = os.path.join(dev_folder, "versions")
 
-    # Get the source paths
+    # Create necessary subdirectories
+    os.makedirs(ai_docs_folder, exist_ok=True)
+    os.makedirs(versions_folder, exist_ok=True)
+
+    # Define source paths for executable and configuration
     exe_source_path = os.path.join(install_dir, 'CodeFlattener.exe')
     appsettings_source_path = os.path.join(install_dir, 'appsettings.json')
 
-    # Create the counter file in the Install directory
-    counter_file_name = f"{base_name}_counter.txt"
-    counter_file_path = os.path.join(counters_folder, counter_file_name)
+    # Verify source files exist
+    if not os.path.isfile(exe_source_path):
+        raise FileNotFoundError(f"Executable not found: {exe_source_path}")
+    if not os.path.isfile(appsettings_source_path):
+        raise FileNotFoundError(f"Configuration file not found: {appsettings_source_path}")
 
-    # Create a folder in the default save folder for the project
+    # Define counter file paths
+    counter_file_name = f"{base_name}_counter.txt"
+    ai_response_counter_file_name = f"{base_name}_ai_response_counter.txt"
+    counter_file_path = os.path.join(counters_folder, counter_file_name)
+    ai_response_counter_file_path = os.path.join(counters_folder, ai_response_counter_file_name)
+
+    # Create project save folder
     project_save_folder = os.path.join(default_save_folder, base_name)
     os.makedirs(project_save_folder, exist_ok=True)
 
-    # Ensure the .dev and versions folders exist
-    os.makedirs(versions_folder, exist_ok=True)
-
-    # Copy the exe and appsettings.json into the .dev folder
+    # Copy necessary files to the .dev folder
     shutil.copy(exe_source_path, dev_folder)
     shutil.copy(appsettings_source_path, dev_folder)
+    logging.info(f"Copied CodeFlattener.exe and appsettings.json to {dev_folder}")
+
+    # Determine the Python environment
+    python_path = shutil.which('python')
+    if python_path:
+        logging.info(f"Python found at: {python_path}")
+        run_python_setup(
+            dev_folder, base_name, root_folder, project_save_folder, versions_folder,
+            counter_file_path, ai_response_counter_file_path, python_path, ai_docs_folder)
+    else:
+        logging.info("Python not found. Proceeding with PowerShell setup.")
+        powershell_setup(
+            dev_folder, base_name, root_folder, project_save_folder, versions_folder,
+            counter_file_path, ai_response_counter_file_path, ai_docs_folder)
 
     # Create the PowerShell script
     script_name = f"RunCodeFlattener_{base_name}.ps1"
     script_path = os.path.join(root_folder, script_name)
 
-    script_content = f"""
-# Initialize the counter if it doesn't exist
-if (-not (Test-Path -Path "{counter_file_path}")) {{
-    Set-Content -Path "{counter_file_path}" -Value "1"
+    # Ensure proper escaping of single quotes in paths
+    versions_folder_escaped = versions_folder.replace("'", "''")
+    dev_folder_escaped = dev_folder.replace("'", "''")
+    project_save_folder_escaped = project_save_folder.replace("'", "''")
+    counter_file_path_escaped = counter_file_path.replace("'", "''")
+
+    script_content = f"""# Initialize the counter if it doesn't exist
+if (-not (Test-Path -Path '{counter_file_path_escaped}')) {{
+    Set-Content -Path '{counter_file_path_escaped}' -Value "1"
 }}
 
 # Read the counter value and convert to an integer
-$counter = [int](Get-Content -Path "{counter_file_path}")
+$counter = [int](Get-Content -Path '{counter_file_path_escaped}')
 
-# Create a var to hold the final path
-$savePath = '{os.path.join(versions_folder, base_name + '_codebase_v$counter.md')}'"
+# Create a variable to hold the final path
+$savePath = '{os.path.join(versions_folder, f"{base_name}_codebase_v")}$counter.md'
 
 # Define the command
-$command = "{os.path.join(dev_folder, 'CodeFlattener.exe')} -i . -o '$savePath'"
+$command = '{os.path.join(dev_folder, "CodeFlattener.exe")}' -i . -o "$savePath"
 
 # Try to run the command
 try {{
@@ -93,9 +149,9 @@ catch {{
     exit 1
 }}
 
-# Try to Copy the output to the database folder with the project name
+# Try to copy the output to the database folder with the project name
 try {{
-    Copy-Item -Path '$savePath' -Destination '{os.path.join(project_save_folder, 'codebase_v$counter.md')}' -Force
+    Copy-Item -Path $savePath -Destination '{os.path.join(project_save_folder, "codebase_v")}$counter.md' -Force
 }}
 catch {{
     Write-Error "Failed to copy the output to the database folder"
@@ -105,10 +161,10 @@ catch {{
 $counter++
 
 # Save the new counter value
-Set-Content -Path "{counter_file_path}" -Value $counter
+Set-Content -Path '{counter_file_path_escaped}' -Value $counter
 
 # Copy the contents of the current version's text file to the clipboard
-$version_text = Get-Content -Path '$savePath'
+$version_text = Get-Content -Path $savePath
 Set-Clipboard -Value $version_text
 
 # Print that the command was executed successfully
@@ -122,19 +178,13 @@ try {{
     $gitignore_path = Join-Path -Path '{root_folder}' -ChildPath '.gitignore'
     $git_path = Join-Path -Path '{root_folder}' -ChildPath '.git'
     if (-not (Test-Path -Path $gitignore_path) -and (Test-Path -Path $git_path)) {{
-        Add-Content -Path $gitignore_path -Value ".dev"
-        Add-Content -Path $gitignore_path -Value "*RunCodeFlattener*.ps1"
-        Add-Content -Path $gitignore_path -Value "*_codebase_v*.md"
-        Add-Content -Path $gitignore_path -Value "logs"
+        New-Item -Path $gitignore_path -ItemType File -Force
+        Add-Content -Path $gitignore_path -Value ".dev`n*RunCodeFlattener*.ps1`n*_codebase_v*.md`nlogs"
     }}
     elseif ((Test-Path -Path $gitignore_path) -and (Test-Path -Path $git_path)) {{
-        Add-Content -Path $gitignore_path -Value ".dev"
-        Add-Content -Path $gitignore_path -Value "*RunCodeFlattener*.ps1"
-        Add-Content -Path $gitignore_path -Value "*_codebase_v*.md"
-        Add-Content -Path $gitignore_path -Value "logs"
+        Add-Content -Path $gitignore_path -Value ".dev`n*RunCodeFlattener*.ps1`n*_codebase_v*.md`nlogs"
     }}
 }}
-
 catch {{
     Write-Error "Failed to update the .gitignore file"
 }}
@@ -143,34 +193,62 @@ catch {{
 Write-Host "Operation complete."
 """
 
-    # Write the PowerShell script
+    # Write the PowerShell script to the specified path
     with open(script_path, 'w') as script_file:
         script_file.write(script_content)
+    logging.info(f"PowerShell script created at: {script_path}")
 
     return script_path, dev_folder
 
 
-def main(args):
-    if len(args) == 0:
-        root_folder = os.getcwd()  # Default to the current working directory
-    else:
-        root_folder = args[0]  # Use the provided folder path
-
-    script_path, dev_folder = create_flattener_setup(root_folder)
-    print(f"Script created at: {script_path}\n.dev folder created at: {dev_folder}")
-
-    # look in the root for a .gitignore file
+def update_gitignore(root_folder):
+    """
+    Updates the .gitignore file to include necessary entries.
+    
+    :param root_folder: The root directory where the .gitignore resides.
+    """
     gitignore_path = os.path.join(root_folder, ".gitignore")
     git_path = os.path.join(root_folder, ".git")
-    if not os.path.exists(gitignore_path) and os.path.exists(git_path):
-        with open(gitignore_path, 'w') as gitignore_file:
-            gitignore_file.write(".dev\n*RunCodeFlattener*.ps1\n")
-    elif os.path.exists(gitignore_path) and os.path.exists(git_path):
-        with open(gitignore_path, 'a') as gitignore_file:
-            gitignore_file.write(".dev\n*RunCodeFlattener*.ps1\n")
 
-    print(f".gitignore file updated to ignore .dev folder and RunCodeFlattener scripts.")
-    print("Setup complete.")
+    if os.path.exists(git_path):
+        entries = [".dev", "*RunCodeFlattener*.ps1", "*_codebase_v*.md", "logs"]
+        if not os.path.exists(gitignore_path):
+            with open(gitignore_path, 'w') as gitignore_file:
+                gitignore_file.write('\n'.join(entries) + '\n')
+            logging.info(".gitignore file created and updated.")
+        else:
+            with open(gitignore_path, 'a') as gitignore_file:
+                for entry in entries:
+                    gitignore_file.write(f"{entry}\n")
+            logging.info(".gitignore file updated.")
+    else:
+        logging.warning("No .git directory found. Skipping .gitignore update.")
+
+
+def main(args):
+    """
+    Main function to initiate the setup.
+    
+    :param args: Command-line arguments.
+    """
+    if len(args) == 0:
+        root_folder = os.getcwd()  # Default to the current working directory
+        logging.info(f"No root folder provided. Using current directory: {root_folder}")
+    else:
+        root_folder = args[0]  # Use the provided folder path
+        logging.info(f"Using provided root folder: {root_folder}")
+
+    try:
+        script_path, dev_folder = create_flattener_setup(root_folder)
+        logging.info(f".dev folder created at: {dev_folder}")
+    except Exception as e:
+        logging.error(f"Failed to create flattener setup: {e}")
+        sys.exit(1)
+
+    # Update the .gitignore file
+    update_gitignore(root_folder)
+
+    logging.info("Setup complete.")
 
 
 if __name__ == "__main__":
