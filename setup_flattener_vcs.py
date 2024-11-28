@@ -3,13 +3,20 @@ import shutil
 import sys
 
 install_dir = os.path.dirname(os.path.abspath(__file__))
-database_dir = os.path.dirname(os.path.abspath('~'))
+database_dir = os.path.join(os.environ.get(
+    "USERHOME", os.path.expanduser("~")), ".fltn_data")
+
+print(install_dir)
+print(database_dir)
 
 counters_folder = os.path.join(install_dir, "counters")
 default_save_folder = os.path.join(database_dir, '.fltn_data')
 
 if not os.path.exists(counters_folder):
     os.makedirs(counters_folder, exist_ok=True)
+
+if not os.path.exists(default_save_folder):
+    os.makedirs(default_save_folder, exist_ok=True)
 
 
 def create_flattener_setup(root_folder):
@@ -45,7 +52,11 @@ def create_flattener_setup(root_folder):
 
     # Create the counter file in the Install directory
     counter_file_name = f"{base_name}_counter.txt"
-    counter_file_path = os.path.join(install_dir, counter_file_name)
+    counter_file_path = os.path.join(counters_folder, counter_file_name)
+
+    # Create a folder in the default save folder for the project
+    project_save_folder = os.path.join(default_save_folder, base_name)
+    os.makedirs(project_save_folder, exist_ok=True)
 
     # Ensure the .dev and versions folders exist
     os.makedirs(versions_folder, exist_ok=True)
@@ -84,11 +95,10 @@ catch {{
 
 # Try to Copy the output to the database folder with the project name
 try {{
-    Copy-Item -Path '$savePath' -Destination '{os.path.join(default_save_folder, base_name + '_codebase_v$counter.md')}' -Force
+    Copy-Item -Path '$savePath' -Destination '{os.path.join(project_save_folder, 'codebase_v$counter.md')}' -Force
 }}
 catch {{
     Write-Error "Failed to copy the output to the database folder"
-    exit 1
 }}
 
 # Increment the counter
@@ -114,14 +124,14 @@ try {{
     if (-not (Test-Path -Path $gitignore_path) -and (Test-Path -Path $git_path)) {{
         Add-Content -Path $gitignore_path -Value ".dev"
         Add-Content -Path $gitignore_path -Value "*RunCodeFlattener*.ps1"
-        Add-Content -Path $gitignore_path -Value "*_counter.txt"
         Add-Content -Path $gitignore_path -Value "*_codebase_v*.md"
+        Add-Content -Path $gitignore_path -Value "logs"
     }}
     elseif ((Test-Path -Path $gitignore_path) -and (Test-Path -Path $git_path)) {{
         Add-Content -Path $gitignore_path -Value ".dev"
         Add-Content -Path $gitignore_path -Value "*RunCodeFlattener*.ps1"
-        Add-Content -Path $gitignore_path -Value "*_counter.txt"
         Add-Content -Path $gitignore_path -Value "*_codebase_v*.md"
+        Add-Content -Path $gitignore_path -Value "logs"
     }}
 }}
 
@@ -147,8 +157,7 @@ def main(args):
         root_folder = args[0]  # Use the provided folder path
 
     script_path, dev_folder = create_flattener_setup(root_folder)
-    print(f"Script created at: {
-          script_path}\n.dev folder created at: {dev_folder}")
+    print(f"Script created at: {script_path}\n.dev folder created at: {dev_folder}")
 
     # look in the root for a .gitignore file
     gitignore_path = os.path.join(root_folder, ".gitignore")
