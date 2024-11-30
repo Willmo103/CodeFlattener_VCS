@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import sys
@@ -214,7 +215,8 @@ def create_main_powershell_script(root_folder, dev_folder, project_save_folder, 
     project_save_folder_escaped = project_save_folder.replace("'", "''")
     counter_file_path_escaped = counter_file_path.replace("'", "''")
 
-    script_content = f"""# Initialize the counter if it doesn't exist
+    script_content = f"""
+# Initialize the counter if it doesn't exist
 if (-not (Test-Path -Path '{counter_file_path_escaped}')) {{
     Set-Content -Path '{counter_file_path_escaped}' -Value "1"
 }}
@@ -223,10 +225,10 @@ if (-not (Test-Path -Path '{counter_file_path_escaped}')) {{
 $counter = [int](Get-Content -Path '{counter_file_path_escaped}')
 
 # Create a variable to hold the final path
-$savePath = '{os.path.join(versions_folder, f"{base_name}_codebase_v")}$counter.md'
+$savePath = "{os.path.join(versions_folder, f"{base_name}_codebase_v")}$counter.md"
 
 # Define the command
-$command = '{os.path.join(dev_folder, "CodeFlattener.exe")}' -i . -o "$savePath"
+$command = "{os.path.join(dev_folder, "CodeFlattener.exe")} -i . -o $savePath"
 
 # Try to run the command
 try {{
@@ -239,7 +241,7 @@ catch {{
 
 # Try to copy the output to the database folder with the project name
 try {{
-    Copy-Item -Path $savePath -Destination '{os.path.join(project_save_folder, "codebase_v")}$counter.md' -Force
+    Copy-Item -Path $savePath -Destination "{os.path.join(project_save_folder, "codebase_v")}$counter.md" -Force
 }}
 catch {{
     Write-Error "Failed to copy the output to the database folder"
@@ -314,6 +316,31 @@ def update_gitignore(root_folder):
         logging.warning("No .git directory found. Skipping .gitignore update.")
 
 
+def update_appsettings_json(dev_folder):
+    """
+    Updates the appsettings.json file with the necessary configuration.
+
+    :param dev_folder: The .dev folder path.
+    """
+    appsettings_path = os.path.join(dev_folder, "appsettings.json")
+
+    # Read the existing appsettings.json file
+    with open(appsettings_path, 'r') as appsettings_file:
+        appsettings_content = json.load(appsettings_file)
+
+    try:
+        appsettings_content["Ignored"].append("RunCodeFlattener")
+        appsettings_content["Ignored"].append("AddDoc")
+        appsettings_content["Ignored"].append("_codebase_v")
+        with open(appsettings_path, 'w') as appsettings_file:
+            json.dump(appsettings_content, appsettings_file, indent=4)
+    except KeyError:
+        logging.error("Failed to update appsettings.json file.")
+        return
+
+    # Update the configuration as needed
+
+
 def main(args):
     """
     Main function to initiate the setup.
@@ -335,8 +362,17 @@ def main(args):
         logging.error(f"Failed to create flattener setup: {e}")
         sys.exit(1)
 
-    # Update the .gitignore file
-    update_gitignore(root_folder)
+    try:
+        # Update the appsettings.json file
+        update_appsettings_json(dev_folder)
+    except Exception as e:
+        logging.error(f"Failed to update appsettings.json: {e}")
+
+    try:
+        # Update the .gitignore file
+        update_gitignore(root_folder)
+    except Exception as e:
+        logging.error(f"Failed to update .gitignore: {e}")
 
     logging.info("Setup complete.")
 
