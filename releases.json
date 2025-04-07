@@ -1,0 +1,33 @@
+{
+    "current_version": "2.3.0",
+    "releases": [
+        {
+            "version": "2.3.0",
+            "date": "2025-04-05",
+            "downloads": {
+                "executable": "https://github.com/Willmo103/FlattenCodeBase/releases/download/v2.3.0/CodeFlattener.exe",
+                "config": "https://github.com/Willmo103/FlattenCodeBase/releases/download/v2.3.0/appsettings.json",
+                "setup": "https://github.com/Willmo103/CodeFlattener_VCS/releases/download/v2.3.0/setup_flattener_vcs.py",
+                "updater": "https://github.com/Willmo103/CodeFlattener_VCS/releases/download/v2.3.0/updater.py"
+            },
+            "changes": [
+                "Added SQLite database storage",
+                "Implemented Jinja templates for script generation",
+                "Improved error handling and logging to central location",
+                "Added automatic parsing of flattened files into database",
+                "Added updater functionality with backup/restore"
+            ]
+        },
+        {
+            "version": "2.2.0",
+            "date": "2025-03-01",
+            "downloads": {
+                "executable": "https://github.com/Willmo103/FlattenCodeBase/releases/download/v2.2.0/CodeFlattener.exe",
+                "config": "https://github.com/Willmo103/FlattenCodeBase/releases/download/v2.2.0/appsettings.json"
+            },
+            "changes": [
+                "Original version from previous repository"
+            ]
+        }
+    ]
+}
